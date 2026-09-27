@@ -1,0 +1,255 @@
+📊 Dataset
+The primary classification dataset used in the project is the Depresjon Dataset, containing actigraphy and behavioral monitoring data.
+The project uses subject-level information from:
+- Condition subjects
+- Control subjects
+The dataset contains 55 subjects:
+- 23 condition subjects
+- 32 control subjects
+The raw activity recordings are cleaned and resampled to 5-minute intervals before feature extraction.
+Raw datasets are not required for running the Streamlit dashboard because the processed results and trained models are already included separately.
+
+🔬 Feature Extraction
+1. Cosinor Analysis
+A 24-hour Cosinor model is used to characterize broad daily activity rhythms.
+Extracted features include:
+- Mesor
+- Amplitude
+- Acrophase
+- R²
+The model represents activity using a sinusoidal 24-hour component.
+2. Wavelet Transform
+Continuous Wavelet Transform is used to analyze activity patterns across different time scales.
+The project analyzes periods between approximately:
+2 hours → 48 hours
+
+Wavelet-derived features include:
+- Total wavelet power
+- Short-period power
+- Intermediate-period power
+- Circadian power
+- Long-period power
+- Power ratios
+- Dominant period
+- Dominant power
+The circadian band used in feature extraction corresponds to approximately:
+18 → 30 hours
+
+3. Sample Entropy
+Sample Entropy is used to quantify the regularity and complexity of the activity signal.
+4. Permutation Entropy
+Permutation Entropy measures the complexity of the signal based on ordinal patterns.
+5. Detrended Fluctuation Analysis
+DFA is used to characterize long-range scaling behavior in the activity signal.
+The extracted feature is:
+DFA Alpha
+
+🤖 Machine Learning
+The extracted features are combined into a subject-level feature table.
+Two classification models are used:
+Random Forest
+A Random Forest classifier is trained using the extracted biological rhythm and complexity features.
+XGBoost
+An XGBoost classifier is also trained using the same feature representation.
+🔒 Subject-Level Validation
+A major methodological component of the project is preventing data leakage.
+Instead of randomly splitting individual activity segments, the project keeps each subject separated during validation.
+The classification pipeline uses:
+GroupKFold
+
+with:
+Group = Subject ID
+
+Therefore, activity information belonging to the same subject is not placed in both the training and validation groups.
+This provides a more realistic subject-level evaluation.
+📈 Cross-Validation Results
+The current 5-fold GroupKFold evaluation produced the following out-of-fold results.
+Random Forest
+Metric	Result
+Accuracy	0.7273
+Precision	0.7000
+Recall	0.6087
+F1 Score	0.6512
+ROC-AUC	0.8057
+
+
+XGBoost
+Metric	Result
+Accuracy	0.7273
+Precision	0.7222
+Recall	0.5652
+F1 Score	0.6341
+ROC-AUC	0.7595
+
+
+These values represent subject-level cross-validation performance and should not be interpreted as clinical diagnostic performance.
+🖥️ Streamlit Dashboard
+The project includes an interactive Streamlit dashboard.
+The dashboard allows users to select an individual subject and explore:
+Activity Signal
+Displays the subject's 5-minute resampled activity signal.
+Cosinor Analysis
+Displays:
+- Mesor
+- Amplitude
+- Acrophase
+- R²
+- Observed activity vs fitted 24-hour Cosinor curve
+Wavelet Analysis
+Displays:
+- Circadian power ratio
+- Dominant period
+- Dominant power
+- Continuous Wavelet Transform visualization
+Complexity Analysis
+Displays:
+- Sample Entropy
+- Permutation Entropy
+- DFA Alpha
+Machine Learning
+Displays predictions from:
+- Random Forest
+- XGBoost
+along with model-estimated condition probabilities.
+
+📁 Project Structure
+Biological_Rhythm_Project/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+│
+├── data/
+│   └── Dataset files
+│
+├── models/
+│   ├── random_forest_model.joblib
+│   ├── xgboost_model.joblib
+│   └── feature_order.txt
+│
+├── notebooks/
+│
+├── results/
+│   ├── cleaned_depresjon/
+│   ├── activity_5min/
+│   ├── cosinor_features.csv
+│   ├── wavelet_features.csv
+│   ├── sample_entropy_features.csv
+│   ├── permutation_entropy_features.csv
+│   ├── dfa_features.csv
+│   ├── feature_table.csv
+│   ├── depresjon_audit.csv
+│   ├── random_forest_cv_results.csv
+│   └── xgboost_cv_results.csv
+│
+└── src/
+    ├── inspect_depresjon.py
+    ├── audit_depresjon.py
+    ├── check_gaps.py
+    ├── preprocess_depresjon.py
+    ├── prepare_activity.py
+    ├── cosinor_analysis.py
+    ├── wavelet_analysis.py
+    ├── extract_wavelet_features.py
+    ├── entropy_analysis.py
+    ├── permutation_entropy.py
+    ├── dfa_analysis.py
+    ├── combine_features.py
+    ├── prepare_ml.py
+    ├── random_forest.py
+    ├── xgboost_model.py
+    └── train_final_models.py
+
+🚀 Running the Project
+1. Clone or download the project
+git clone <YOUR-GITHUB-REPOSITORY-URL>
+cd Biological_Rhythm_Project
+
+2. Create a virtual environment
+Windows
+python -m venv .venv
+
+Activate it:
+.venv\Scripts\activate
+
+3. Install dependencies
+python -m pip install -r requirements.txt
+
+4. Run the Streamlit dashboard
+From the project root:
+streamlit run app.py
+
+The dashboard will open in your browser.
+🔄 Re-running the Analysis Pipeline
+The scripts inside src/ can be executed to reproduce the analysis pipeline.
+The general workflow is:
+Dataset
+   ↓
+Audit
+   ↓
+Preprocessing
+   ↓
+5-minute Resampling
+   ↓
+Cosinor Features
+   ↓
+Wavelet Features
+   ↓
+Entropy Features
+   ↓
+DFA Features
+   ↓
+Combined Feature Table
+   ↓
+GroupKFold ML Evaluation
+   ↓
+Final Model Training
+   ↓
+Streamlit Dashboard
+
+The final trained models used by the dashboard are stored inside:
+models/
+
+⚠️ Important Notes
+Research / Educational Use
+This project is intended for academic, research, and demonstration purposes.
+The machine-learning output is not a clinical diagnosis and should not be used as a medical decision-making system.
+Model Evaluation
+The dashboard models are trained using the complete available feature dataset for demonstration/inference.
+Model performance should instead be evaluated using the separate subject-level GroupKFold cross-validation results.
+Dataset
+Raw datasets may have separate usage and redistribution requirements. Verify the dataset's terms before publishing raw data in a public repository.
+🔮 Future Scope
+Possible future extensions include:
+- Multiscale Entropy
+- Multifractal analysis
+- Additional wearable signals
+- Heart-rate based rhythm analysis
+- Sleep-stage integration
+- Larger subject populations
+- External validation datasets
+- Near-real-time wearable data integration
+- Improved longitudinal health-state monitoring
+👩‍💻 Project
+Automated Biological Rhythm Analysis & Health State Classification
+Final Year B.Tech Project
+Government College of Engineering, Karad
+Team Project — 4 Members
+🧬 Technologies Used
+- Python
+- Pandas
+- NumPy
+- SciPy
+- Matplotlib
+- PyWavelets
+- Scikit-learn
+- XGBoost
+- Joblib
+- Streamlit
+
+### After pasting
+
+Save the file with exactly:
+
+```text
+README.md
